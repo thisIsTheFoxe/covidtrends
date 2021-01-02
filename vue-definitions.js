@@ -378,6 +378,269 @@ window.app = new Vue({
         .map(e => Object.assign({}, e, {region: e['Province/State']}));
     },
 
+    // returns a function that takes two arrays and adds the corresponding places together for list of dates
+    addNumericRows(dates) {
+      return function(row1, row2) {
+        var newRow = {};
+        for (let date of dates) { 
+          newRow[date] = Number(row1[date]) + Number(row2[date]);
+        }
+        return newRow;
+      };
+    },
+
+    // add a row to the end of the data that sums global data
+    addRowForWorld(data, dates) {
+      var newRow = data.reduce(this.addNumericRows(dates));
+      newRow['Country/Region'] = 'World';
+      data.push(newRow); 
+    },
+
+    // add a row to the end of the data that sums global data
+    addRowForGeography(data, dates, geography, countries) {
+      var selectData = [];
+      for (var i = 0; i < data.length; i++) {
+        var name = data[i]['Country/Region'];
+        if (countries.includes(name)) {
+          // for debugging
+          //console.log("Adding " + name + " to " + geography + ".")
+          selectData.push(data[i]);
+        }
+      }
+
+      if (selectData.length > 0) {
+        var newRow = selectData.reduce(this.addNumericRows(dates));
+        newRow['Country/Region'] = geography;
+        data.push(newRow); 
+      }
+    },
+
+    getContinentNames() {
+      return ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceanica'];
+    },
+
+    getGeographyInfo() {
+      return {
+        'Africa': 
+              ['Algeria',
+                'Angola',
+                'Benin',
+                'Botswana',
+                'Burkina Faso',
+                'Burundi',
+                'Cabo Verde',
+                'Cameroon',
+                'Central African Republic',
+                'Chad',
+                'Comoros',
+                'Congo (Brazzaville)',
+                'Congo (Kinshasa)',
+                'Cote d\'Ivoire',
+                'Djibouti',
+                'Egypt',
+                'Equatorial Guinea',
+                'Eritrea',
+                'Eswatini',
+                'Ethiopia',
+                'Gabon',
+                'Gambia',
+                'Ghana',
+                'Guinea',
+                'Guinea-Bissau',
+                'Kenya',
+                'Lesotho',
+                'Liberia',
+                'Libya',
+                'Madagascar',
+                'Malawi',
+                'Mali',
+                'Mauritania',
+                'Mauritius',
+                'Morocco',
+                'Mozambique',
+                'Namibia',
+                'Niger',
+                'Nigeria',
+                'Rwanda',
+                'Sao Tome and Principe',
+                'Senegal',
+                'Seychelles',
+                'Sierra Leone',
+                'Somalia',
+                'South Africa',
+                'South Sudan',
+                'Sudan',
+                'Tanzania',
+                'Togo',
+                'Tunisia',
+                'Uganda',
+                'Zambia',
+                'Zimbabwe'
+              ],
+        'Asia': [
+          'Afghanistan',
+          'Armenia',
+          'Azerbaijan*',
+          'Bahrain',
+          'Bangladesh',
+          'Bhutan',
+          'Brunei',
+          'Burma',
+          'Cambodia',
+          'China',
+          'Cyprus',
+          'Georgia',
+          'Hong Kong',
+          'India',
+          'Indonesia',
+          'Iran',
+          'Iraq',
+          'Israel',
+          'Japan',
+          'Jordan',
+          'Kazakhstan',
+          'North Korea',
+          'Korea, South',
+          'Kuwait',
+          'Kyrgyzstan',
+          'Laos',
+          'Lebanon',
+          'Malaysia',
+          'Maldives',
+          'Mongolia',
+          'Nepal',
+          'Oman',
+          'Pakistan',
+          'Philippines',
+          'Qatar',
+          'Russia',
+          'Saudi Arabia',
+          'Singapore',
+          'Sri Lanka',
+          'Syria',
+          'Taiwan*',
+          'Tajikistan',
+          'Thailand',
+          'Timor-Leste',
+          'Turkey',
+          'Turkmenistan',
+          'United Arab Emirates',
+          'Uzbekistan',
+          'Vietnam',
+          'West Bank and Gaza',
+          'Yemen'
+        ],
+        'Europe': [
+          'Albania',
+          'Andorra',
+          'Austria',
+          'Azerbaijan',
+          'Belarus',
+          'Belgium',
+          'Bosnia and Herzegovina',
+          'Bulgaria',
+          'Croatia',
+          'Czechia',
+          'Czech Republic',
+          'Denmark',
+          'Estonia',
+          'Finland',
+          'France',
+          'Georgia',
+          'Germany',
+          'Greece',
+          'Holy See (Vatican City)',
+          'Hungary',
+          'Iceland',
+          'Ireland',
+          'Italy',
+          'Kazakhstan',
+          'Kosovo',
+          'Latvia',
+          'Liechtenstein',
+          'Lithuania',
+          'Luxembourg',
+          'Malta',
+          'Moldova',
+          'Monaco',
+          'Montenegro',
+          'Netherlands',
+          'North Macedonia',
+          'Norway',
+          'Poland',
+          'Portugal',
+          'Romania',
+          'Russia',
+          'San Marino',
+          'Serbia',
+          'Slovakia',
+          'Slovenia',
+          'Spain',
+          'Sweden',
+          'Switzerland',
+          'Turkey',
+          'Ukraine',
+          'United Kingdom'
+        ],
+        'North America': [
+          'Antigua and Barbuda',
+          'Bahamas',
+          'Barbados',
+          'Belize',
+          'Canada',
+          'Costa Rica',
+          'Cuba',
+          'Dominica',
+          'Dominican Republic',
+          'El Salvador',
+          'Grenada',
+          'Guatemala',
+          'Haiti',
+          'Honduras',
+          'Jamaica',
+          'Mexico',
+          'Nicaragua',
+          'Panama',
+          'Saint Kitts and Nevis',
+          'Saint Lucia',
+          'Saint Vincent and the Grenadines',
+          'Trinidad and Tobago',
+          'US'
+        ],
+        'South America': [
+          'Argentina',
+          'Bolivia',
+          'Brazil',
+          'Chile',
+          'Colombia',
+          'Ecuador',
+          'Guyana',
+          'Paraguay',
+          'Peru',
+          'Suriname',
+          'Uruguay',
+          'Venezuela'
+        ],
+        'Oceanica': [
+          'Australia',
+          'Fiji',
+          'Kiribati',
+          'Marshall Islands',
+          'Federated States of Micronesia',
+          'Nauru',
+          'New Zealand',
+          'Palau',
+          'Papua New Guinea',
+          'Samoa',
+          'Solomon Islands',
+          'Tonga',
+          'Tuvalu',
+          'Vanuatu'
+        ]
+      };
+    },
+
+
     processData(data, selectedRegion, updateSelectedCountries) {
       let dates = Object.keys(data[0]).slice(4);
       this.dates = dates;
@@ -388,6 +651,14 @@ window.app = new Vue({
       let grouped;
 
       if (selectedRegion == 'World') {
+        // add rows for world and for each continent
+        this.addRowForWorld(data, dates);
+        var geographyInfo = this.getGeographyInfo();
+        var continentNames = this.getContinentNames();
+        for (var continent of continentNames) {
+          this.addRowForGeography(data, dates, continent, geographyInfo[continent]);
+        }
+
         grouped = this.groupByCountry(data, dates, regionsToPullToCountryLevel);
 
         // pull Hong Kong and Macau to Country level
@@ -412,12 +683,6 @@ window.app = new Vue({
       };
 
       let covidData = [];
-      let totalData = {
-        country: 'Total',
-        cases: [],
-        slope: [],
-        maxCases: 0
-      };
 
       for (let row of grouped) {
 
@@ -440,32 +705,17 @@ window.app = new Vue({
             slope: slope.map((e, i) => arr[i] >= this.minCasesInCountry ? e : NaN),
             maxCases: this.myMax(...cases)
           });
-
-          cases.forEach((c, ix) => {
-            if (isNaN(totalData.cases[ix]) && !isNaN(c)) {
-              totalData.cases[ix] = Number(c);
-            } else if (!isNaN(c)) {
-              totalData.cases[ix] += Number(c);
-            }
-          });
-
-          slope.map((e, i) => arr[i] >= this.minCasesInCountry ? e : NaN).forEach((c, ix) => {
-            if (isNaN(totalData.slope[ix])) {
-              totalData.slope[ix] = c;
-            } else if (!isNaN(c)) {
-              totalData.slope[ix] += c;
-            }
-          });
         }
       }
-      totalData.maxCases = this.myMax(...totalData.cases);
 
-      covidData.push(totalData);
-      this.covidData = covidData.filter(e => e.maxCases > this.minCasesInCountry);
-      this.countries = this.covidData.map(e => e.country).sort();
       this.sortOptions = this.selectedData == 'Confirmed Cases' ? ['Alphabetic', 'New Cases', 'Confirmed Cases'] : ['Alphabetic', 'New Deaths', 'Total Deaths'];
       this.sort = this.sortOptions[0];
-      this.visibleCountries = this.countries;
+
+      this.covidData = covidData.filter(e => e.maxCases > this.minCasesInCountry);
+      this.countries = this.covidData.map(e => e.country).sort();
+      this.continentNames = this.getContinentNames();
+      this.continentNames.push('World');
+      this.visibleCountries = this.countries.filter((a) => !this.continentNames.includes(a));
       const topCountries = this.covidData.sort((a, b) => b.maxCases - a.maxCases).slice(0, 9).map(e => e.country);
       const notableCountries = ['China (Mainland)', 'India', 'US', // Top 3 by population
         'South Korea', 'Japan', 'Taiwan', 'Singapore', // Observed success so far
