@@ -682,8 +682,8 @@ window.app = new Vue({
         'China': 'China (Mainland)'
       };
 
-
       let covidData = [];
+
       for (let row of grouped) {
 
         if (!exclusions.includes(row.region)) {
@@ -705,9 +705,11 @@ window.app = new Vue({
             slope: slope.map((e, i) => arr[i] >= this.minCasesInCountry ? e : NaN),
             maxCases: this.myMax(...cases)
           });
-
         }
       }
+
+      this.sortOptions = this.selectedData == 'Confirmed Cases' ? ['Alphabetic', 'New Cases', 'Confirmed Cases'] : ['Alphabetic', 'New Deaths', 'Total Deaths'];
+      this.sort = this.sortOptions[0];
 
       this.covidData = covidData.filter(e => e.maxCases > this.minCasesInCountry);
       this.countries = this.covidData.map(e => e.country).sort();
@@ -815,6 +817,7 @@ window.app = new Vue({
 
     search() {
       this.visibleCountries = this.countries.filter(e => e.toLowerCase().includes(this.searchField.toLowerCase()));
+      this.sortCountries();
     },
 
     selectAll() {
@@ -827,12 +830,34 @@ window.app = new Vue({
       this.createURL();
     },
 
+    sortCountries() {
+      let sortIx = this.sortOptions.indexOf(this.sort);
+      if (sortIx == 0) {
+        //Alphabetic
+        this.visibleCountries = this.visibleCountries.sort();
+      } else if (sortIx == 1) {
+        //New Cases / Deaths
+        const countriesByNewCases = this.covidData
+          .filter(c => this.visibleCountries.includes(c.country))
+          .sort((a, b) => b.slope[b.slope.length - 1] - a.slope[a.slope.length - 1])
+          .map(e => e.country);
+        this.visibleCountries = countriesByNewCases;
+      } else if (sortIx == 2) {
+        //Max Cases / Deaths
+        const countriesByMaxCases = this.covidData
+          .filter(c => this.visibleCountries.includes(c.country))
+          .sort((a, b) => b.maxCases - a.maxCases)
+          .map(e => e.country);
+        this.visibleCountries = countriesByMaxCases;
+      }
+    },
+
     toggleHide() {
       this.isHidden = !this.isHidden;
     },
     
     createURL() {
-      
+
       let queryUrl = new URLSearchParams();
 
       if (this.selectedScale == 'Linear Scale') {
@@ -849,7 +874,7 @@ window.app = new Vue({
 
       // since this rename came later, use the old name for URLs to avoid breaking existing URLs
       let renames = {'China (Mainland)': 'China'};
-            
+      
       if (!this.showTrendLine) {
         queryUrl.append('trendline', this.showTrendLine);
       } 
@@ -1190,6 +1215,10 @@ window.app = new Vue({
     scale: ['Logarithmic Scale', 'Linear Scale'],
 
     selectedScale: 'Logarithmic Scale',
+
+    sortOptions: ['Alphabetic', 'New Cases', 'Confirmed Cases'],
+
+    sort: 'Alphabetic',
 
     minCasesInCountry: 50,
 
